@@ -9,8 +9,11 @@ and it refuses when a counted class is not on the current books.
 A proposed class is never counted, so a stale one refuses nothing.
 A confirmation is judged against the current list, so a record
 proposed under a retired class still confirms into a current one.
-The list is accepted on its shape alone, whatever number its
-version field carries.
+The list is accepted on its shape alone, whatever whole number
+its version field carries. The review fix pins at the end refuse
+the corrupt shapes CV-36 names, two records under one id, a
+class list with a repeated id or a class named unclassified,
+and a version that is not a whole number.
 """
 
 import hashlib
@@ -29,26 +32,19 @@ from cavalry.records import (
     render_list,
     render_proposals,
 )
+from record_factory import make_record
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 RETIRED = "retired-class"
 
 
 def stored(record_id, rescue_class, **extra):
-    record = {
-        "id": record_id,
-        "run_ref": f"run-{record_id}",
-        "rescued_role": "support-operator",
-        "rescuer_role": "on-call-operator",
-        "rescuer_kind": "human",
-        "stalled": "The task stalled because the prompt wording sent the worker in a circle",
-        "human_action": "The operator rephrased the prompt and restarted the task",
-        "occurred_at": "2026-01-01T09:00:00Z",
-        "outcome": "The task finished on the next run",
-        "rescue_class": rescue_class,
-    }
-    record.update(extra)
-    return record
+    return make_record(
+        id=record_id,
+        run_ref=f"run-{record_id}",
+        rescue_class=rescue_class,
+        **extra,
+    )
 
 
 def write_store(tmp_path, rows):
@@ -186,6 +182,117 @@ def test_a_well_formed_list_with_another_version_number_behaves_identically(
     records = read_records(ROOT / "examples" / "records.jsonl")
     expected = (ROOT / "examples" / "proposals.txt").read_text(encoding="utf-8")
     assert render_proposals(records, loaded) == expected
+
+
+def test_a_superseded_record_with_a_stale_class_counts_only_through_its_confirmation(
+    tmp_path,
+):
+    rows = [
+        stored(
+            "rec-008",
+            RETIRED,
+            review_state="proposed",
+            proposed_class=RETIRED,
+        ),
+        stored(
+            "rec-008--confirmed",
+            "prompt-rephrase",
+            corrects="rec-008",
+            review_state="confirmed",
+            confirmed_class="manual-edit",
+            proposed_class=RETIRED,
+        ),
+    ]
+    path = write_store(tmp_path, rows)
+    output = render_proposals(read_records(path))
+    assert "proposal for class manual-edit" in output
+
+
+def test_two_records_under_one_id_refuse_at_read(tmp_path):
+    rows = [stored("rec-009", "prompt-rephrase"), stored("rec-009", RETIRED)]
+    path = write_store(tmp_path, rows)
+    with pytest.raises(RecordError) as caught:
+        read_records(path)
+    assert str(caught.value) == (
+        "records file holds an invalid line 2: duplicate record id: rec-009"
+    )
+
+
+def test_a_forged_third_line_under_a_confirmed_records_id_refuses_at_read(tmp_path):
+    rows = [
+        stored(
+            "rec-010",
+            RETIRED,
+            review_state="proposed",
+            proposed_class=RETIRED,
+        ),
+        stored(
+            "rec-010--confirmed",
+            "prompt-rephrase",
+            corrects="rec-010",
+            review_state="confirmed",
+            confirmed_class="manual-edit",
+            proposed_class=RETIRED,
+        ),
+        stored("rec-010", "zzz-retired"),
+    ]
+    path = write_store(tmp_path, rows)
+    with pytest.raises(RecordError) as caught:
+        read_records(path)
+    assert str(caught.value) == (
+        "records file holds an invalid line 3: duplicate record id: rec-010"
+    )
+
+
+def _list_with(tmp_path, monkeypatch, mutate):
+    raw = json.loads(
+        (ROOT / "cavalry" / "classes.json").read_text(encoding="utf-8")
+    )
+    mutate(raw)
+    changed = tmp_path / "classes.json"
+    changed.write_text(json.dumps(raw), encoding="utf-8")
+    monkeypatch.setattr(records_module, "_CLASSES_PATH", changed)
+
+
+def test_a_class_list_with_a_repeated_class_id_refuses_at_load(
+    tmp_path, monkeypatch
+):
+    def mutate(raw):
+        raw["classes"].append(dict(raw["classes"][0]))
+
+    _list_with(tmp_path, monkeypatch, mutate)
+    with pytest.raises(RecordError) as caught:
+        load_class_list()
+    assert str(caught.value) == (
+        "class list holds two classes with the id: prompt-rephrase"
+    )
+
+
+def test_a_class_list_naming_a_class_unclassified_refuses_at_load(
+    tmp_path, monkeypatch
+):
+    def mutate(raw):
+        raw["classes"][0]["id"] = "unclassified"
+
+    _list_with(tmp_path, monkeypatch, mutate)
+    with pytest.raises(RecordError) as caught:
+        load_class_list()
+    assert str(caught.value) == (
+        "class list names a class with the unclassified value: unclassified"
+    )
+
+
+def test_a_version_that_is_not_a_whole_number_refuses_at_load(
+    tmp_path, monkeypatch
+):
+    for bad in ("7", 2.5, None, True):
+        def mutate(raw, bad=bad):
+            raw["version"] = bad
+
+        _list_with(tmp_path, monkeypatch, mutate)
+        with pytest.raises(RecordError) as caught:
+            load_class_list()
+        assert str(caught.value) == "class list version must be a whole number"
 
 
 def test_the_committed_examples_are_byte_identical():
