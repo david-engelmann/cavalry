@@ -1,0 +1,15 @@
+{
+  "judgment_point": "quality",
+  "request": {
+    "human_action": "The operator rephrased the prompt and restarted the task",
+    "outcome": "The task finished on the next run",
+    "record_id": "fox-001",
+    "stalled": "The task stalled because the prompt wording sent the worker in a circle"
+  },
+  "response": {
+    "confidence": 0.88,
+    "kind": "score",
+    "score": 0.85
+  },
+  "synthetic": true
+}

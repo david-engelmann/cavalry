@@ -1,0 +1,25 @@
+{
+  "judgment_point": "classification",
+  "request": {
+    "classes": [
+      "prompt-rephrase",
+      "run-interruption",
+      "manual-edit"
+    ],
+    "human_action": "The operator rephrased the prompt with plainer steps",
+    "record_id": "fox-005",
+    "stalled": "The worker looped on the same step because the prompt wording was vague"
+  },
+  "response": {
+    "choice": "prompt-rephrase",
+    "confidence": 0.45,
+    "kind": "choice",
+    "probabilities": {
+      "manual-edit": 0.2,
+      "new-class": 0.1,
+      "prompt-rephrase": 0.45,
+      "run-interruption": 0.25
+    }
+  },
+  "synthetic": true
+}

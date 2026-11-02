@@ -1,0 +1,25 @@
+{
+  "judgment_point": "classification",
+  "request": {
+    "classes": [
+      "prompt-rephrase",
+      "run-interruption",
+      "manual-edit"
+    ],
+    "human_action": "The operator rephrased the prompt and restarted the task",
+    "record_id": "fox-001",
+    "stalled": "The task stalled because the prompt wording sent the worker in a circle"
+  },
+  "response": {
+    "choice": "prompt-rephrase",
+    "confidence": 0.9,
+    "kind": "choice",
+    "probabilities": {
+      "manual-edit": 0.03,
+      "new-class": 0.03,
+      "prompt-rephrase": 0.9,
+      "run-interruption": 0.04
+    }
+  },
+  "synthetic": true
+}

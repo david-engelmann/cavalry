@@ -1,0 +1,17 @@
+{
+  "judgment_point": "classification",
+  "request": {
+    "classes": [
+      "prompt-rephrase",
+      "run-interruption",
+      "manual-edit"
+    ],
+    "human_action": "The maintainer edited the file by hand and sent it on",
+    "record_id": "fox-004",
+    "stalled": "The generated file carried a wrong heading that the checker passed"
+  },
+  "response": {
+    "kind": "abstention"
+  },
+  "synthetic": true
+}

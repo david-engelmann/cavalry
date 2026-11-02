@@ -1,0 +1,25 @@
+{
+  "judgment_point": "classification",
+  "request": {
+    "classes": [
+      "prompt-rephrase",
+      "run-interruption",
+      "manual-edit"
+    ],
+    "human_action": "The reviewer killed the run and removed the bad output",
+    "record_id": "fox-002",
+    "stalled": "The run kept writing to the wrong output and would not stop"
+  },
+  "response": {
+    "choice": "manual-edit",
+    "confidence": 0.87,
+    "kind": "choice",
+    "probabilities": {
+      "manual-edit": 0.87,
+      "new-class": 0.02,
+      "prompt-rephrase": 0.03,
+      "run-interruption": 0.08
+    }
+  },
+  "synthetic": true
+}

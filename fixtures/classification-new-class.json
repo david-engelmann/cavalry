@@ -1,0 +1,25 @@
+{
+  "judgment_point": "classification",
+  "request": {
+    "classes": [
+      "prompt-rephrase",
+      "run-interruption",
+      "manual-edit"
+    ],
+    "human_action": "The maintainer checked the source by hand and wrote a note for follow up",
+    "record_id": "fox-003",
+    "stalled": "A dashboard number looked odd for a reason nobody could name"
+  },
+  "response": {
+    "choice": "new-class",
+    "confidence": 0.91,
+    "kind": "choice",
+    "probabilities": {
+      "manual-edit": 0.02,
+      "new-class": 0.91,
+      "prompt-rephrase": 0.04,
+      "run-interruption": 0.03
+    }
+  },
+  "synthetic": true
+}
