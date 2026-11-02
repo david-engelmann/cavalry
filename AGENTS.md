@@ -59,3 +59,5 @@ This repo is cavalry. Its contract lives in CONTRACT.md and that file is the spe
 Boundary. Cavalry records the rescues only a human could make. Prod, also owned by this chat, rescues automatically, and cavalry never performs a rescue or reimplements prod's ladder. Deadman, owned by another chat, is the last rung both point at, and cavalry never reimplements that switch.
 
 First slice. The rescue record format plus a manual capture flow, the first rescue classes classified, and one drafted hook or rule per class, each drafted as a proposal and never as a silent edit to another repo.
+
+Identity exception. The maintainer identity in the required Signed-off-by trailer is the repo owner's public sign-off identity. It is permitted in commit metadata and in that instruction, and the sanitization rule does not apply to it.
