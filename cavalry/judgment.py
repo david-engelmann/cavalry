@@ -24,6 +24,7 @@ directory and nothing else.
 """
 
 import json
+import math
 from pathlib import Path
 
 CONFIDENCE_THRESHOLD = 0.6
@@ -51,7 +52,12 @@ def _fail(source, defect):
 
 
 def _is_number(value):
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        return math.isfinite(float(value))
+    except OverflowError:
+        return False
 
 
 def _check_unit_interval(source, field, value):
@@ -116,12 +122,14 @@ def _validate_response(source, point, response, labels=None):
     if not isinstance(response, dict):
         _fail(source, "response is not an object")
     kind = response.get("kind")
+    if not isinstance(kind, str):
+        _fail(source, "response field 'kind' is not a response kind")
     if kind in _FIELDS_FOR_KIND:
         extra = set(response) - _FIELDS_FOR_KIND[kind]
         if extra:
             _fail(
                 source,
-                f"response carries the field {sorted(extra)[0]!r}, "
+                f"response carries the field {sorted(extra, key=repr)[0]!r}, "
                 f"which a {kind} response does not carry",
             )
     if kind == "abstention":
@@ -165,7 +173,7 @@ def validate_fixture(data, source="fixture"):
         _fail(source, "is not an object")
     extra = set(data) - _FIXTURE_FIELDS
     if extra:
-        _fail(source, f"carries the field {sorted(extra)[0]!r}, which a fixture does not carry")
+        _fail(source, f"carries the field {sorted(extra, key=repr)[0]!r}, which a fixture does not carry")
     if data.get("synthetic") is not True:
         _fail(source, "is not marked synthetic")
     point = data.get("judgment_point")
