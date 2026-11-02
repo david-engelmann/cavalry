@@ -45,7 +45,7 @@ def test_capture_with_fixtures_stores_the_proposal(tmp_path):
     assert stored["review_state"] == "proposed"
 
 
-def test_capture_without_the_flag_behaves_as_round_1_behaved(tmp_path):
+def test_capture_without_the_flag_leaves_the_record_unreviewed(tmp_path):
     records_path = tmp_path / "records.jsonl"
     result = run_cli("capture", str(write_input(tmp_path, AGREE)), str(records_path))
     assert result.returncode == 0, result.stderr

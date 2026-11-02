@@ -297,6 +297,9 @@ def build_confirmation(data, records, class_list=None):
     if class_id not in known:
         raise RecordError(f"unknown class: {class_id}")
     new_id = target_id + CONFIRMED_SUFFIX
+    # The scan above catches a confirmation written by this tool. This
+    # second check catches a hand-forged entry already holding the id
+    # the confirmation would take, which the scan cannot see.
     if new_id in by_id:
         raise RecordError(f"record already confirmed: {target_id}")
     entry = {field: target[field] for field in REQUIRED_FIELDS}
