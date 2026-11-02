@@ -113,18 +113,30 @@ def test_propose_names_the_first_unknown_counted_class_in_sorted_order(tmp_path)
 
 
 def test_a_counted_class_the_later_list_keeps_still_proposes(tmp_path):
+    default = load_class_list()
+    later_classes = []
+    for entry in default["classes"]:
+        if entry["id"] == "manual-edit":
+            continue
+        entry = dict(entry)
+        if entry["id"] == "prompt-rephrase":
+            entry["proposal"] = "A distinct proposal only the later list carries."
+        later_classes.append(entry)
     later = {
         "version": 3,
-        "classes": [
-            entry
-            for entry in load_class_list()["classes"]
-            if entry["id"] != "manual-edit"
-        ],
-        "unclassified_proposal": load_class_list()["unclassified_proposal"],
+        "classes": later_classes,
+        "unclassified_proposal": default["unclassified_proposal"],
     }
     path = write_store(tmp_path, [stored("rec-005", "prompt-rephrase")])
     output = render_proposals(read_records(path), later)
     assert "proposal for class prompt-rephrase" in output
+    assert "A distinct proposal only the later list carries." in output
+    default_text = next(
+        entry["proposal"]
+        for entry in default["classes"]
+        if entry["id"] == "prompt-rephrase"
+    )
+    assert default_text not in output
     assert "manual-edit" not in output
 
 
@@ -160,6 +172,9 @@ def test_a_record_proposed_under_a_retired_class_confirms_into_a_current_class()
     assert entry["rescue_class"] == classify(entry)
     assert entry["rescue_class"] == "prompt-rephrase"
     assert entry["rescue_class"] != target["rescue_class"]
+    output = render_proposals([target, entry])
+    assert "proposal for class manual-edit" in output
+    assert RETIRED not in output
 
 
 def test_a_well_formed_list_with_another_version_number_behaves_identically(
