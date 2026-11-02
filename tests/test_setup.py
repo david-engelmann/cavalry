@@ -12,7 +12,7 @@ EXPECTED_OBLIGATIONS = [
     'CV-S5. Every fixture and example in this repo is synthetic and built for this repo, and no real trace or session data appears anywhere in the tree.',
 ]
 EXPECTED_PREFIX = "CV"
-TEXT_SUFFIXES = {".md", ".yml", ".yaml", ".py", ".toml", ".txt"}
+TEXT_SUFFIXES = {".md", ".yml", ".yaml", ".py", ".toml", ".txt", ".json", ".jsonl"}
 
 
 def test_contract_stub_obligations_exist():
@@ -45,7 +45,10 @@ def test_agents_canonical_block_present():
 
 def test_readme_status_reports_rounds():
     text = (ROOT / "README.md").read_text()
-    assert re.search(r"Closed rounds 0 of 100(?!\d)", text)
+    counts = re.findall(r"Closed rounds (\d+) of 100(?!\d)", text)
+    assert counts == ["0"], (
+        "README status must report exactly one closed round count and it must be 0 of 100"
+    )
 
 
 def test_no_em_or_en_dash_in_text_files():
