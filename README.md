@@ -8,7 +8,7 @@ A takeover is the moment the setup failed a human, and no platform counts rescue
 
 ## Status
 
-Round 1 is built and in review. Closed rounds 0 of 100. Part of the impatient programming portfolio, in the Fleet Operations arc.
+Closed rounds 1 of 100. Round 1 landed in PR 3 and is recorded closed here. The repo carries the rescue record format with named-field validation, an append-only records store, the first rescue classes in a versioned list with an explicit unclassified state, and drafted proposals that are never applied, under contract obligations CV-1 to CV-13 and the review amendments CV-14 to CV-22. The round closed after the independent red team, the two-axis review, the CodeRabbit pass, and the fixes for every finding they raised. Part of the impatient programming portfolio, in the Fleet Operations arc.
 
 ## Licence
 
