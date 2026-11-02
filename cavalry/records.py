@@ -3,6 +3,17 @@ import json
 import pathlib
 import re
 
+from cavalry.judgment import (
+    NEW_CLASS_LABEL,
+    QUALITY_BAR,
+    REVIEW_STATES,
+    check_answer,
+    classification_labels,
+    classification_request,
+    quality_request,
+    trusted,
+)
+
 REQUIRED_FIELDS = (
     "id",
     "run_ref",
@@ -15,7 +26,10 @@ REQUIRED_FIELDS = (
     "outcome",
 )
 OPTIONAL_FIELDS = ("corrects",)
-STORED_FIELDS = REQUIRED_FIELDS + OPTIONAL_FIELDS + ("rescue_class",)
+REVIEW_FIELDS = ("review_state", "proposed_class", "quality_flag", "confirmed_class")
+STORED_FIELDS = REQUIRED_FIELDS + OPTIONAL_FIELDS + ("rescue_class",) + REVIEW_FIELDS
+CONFIRMATION_FIELDS = ("record", "class")
+CONFIRMED_SUFFIX = "--confirmed"
 ROLE_FIELDS = ("rescued_role", "rescuer_role")
 ROLE_LABEL = re.compile(r"[a-z][a-z0-9-]*")
 TIMESTAMP_SHAPE = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z?")
@@ -128,10 +142,47 @@ def validate_input(data, existing_ids=()):
     return data
 
 
-def build_stored_record(data, existing_ids=()):
+def _review_fields(data, class_list, judgments):
+    """The Round 2 review fields a capture writes for one record.
+
+    With no judgment source the record waits in the unreviewed
+    state, exactly as it did before the seam existed. With a
+    source, every answer is checked against the recorded shape for
+    its point before it is trusted, and an answer that fails the
+    check or falls below the contract threshold counts as no
+    judgment at all. A trusted classification answer attaches as a
+    proposal beside the deterministic class and never replaces it.
+    A trusted quality answer below the contract bar records only a
+    flag, and it never touches the review state.
+    """
+    fields = {"review_state": "unreviewed"}
+    if judgments is None:
+        return fields
+    labels = classification_labels(class_list)
+    answer = check_answer(
+        "classification",
+        judgments.judge("classification", classification_request(data, class_list)),
+        labels,
+    )
+    if trusted(answer):
+        fields["proposed_class"] = answer["choice"]
+        fields["review_state"] = "proposed"
+    quality = check_answer(
+        "quality",
+        judgments.judge("quality", quality_request(data)),
+    )
+    if trusted(quality) and float(quality["score"]) < QUALITY_BAR:
+        fields["quality_flag"] = "below-bar"
+    return fields
+
+
+def build_stored_record(data, existing_ids=(), judgments=None, class_list=None):
     validate_input(data, existing_ids)
+    if class_list is None:
+        class_list = load_class_list()
     stored = dict(data)
-    stored["rescue_class"] = classify(data)
+    stored["rescue_class"] = classify(data, class_list)
+    stored.update(_review_fields(data, class_list, judgments))
     return stored
 
 
@@ -149,6 +200,15 @@ def _validate_stored(record, line_number):
             raise RecordError(f"{where}: invalid field: {field} must be text")
     if "corrects" in record and not isinstance(record["corrects"], str):
         raise RecordError(f"{where}: invalid field: corrects must be text")
+    for field in REVIEW_FIELDS:
+        if field in record and not isinstance(record[field], str):
+            raise RecordError(f"{where}: invalid field: {field} must be text")
+    if "review_state" in record and record["review_state"] not in REVIEW_STATES:
+        raise RecordError(f"{where}: invalid field: review_state holds an unknown state")
+    if record.get("review_state") == "proposed" and "proposed_class" not in record:
+        raise RecordError(f"{where}: missing field: proposed_class")
+    if record.get("review_state") == "confirmed" and "confirmed_class" not in record:
+        raise RecordError(f"{where}: missing field: confirmed_class")
     return record
 
 
@@ -170,16 +230,13 @@ def read_records(records_path):
     return records
 
 
-def capture(input_path, records_path):
-    input_file = pathlib.Path(input_path)
-    try:
-        data = json.loads(input_file.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        raise RecordError(f"input file holds invalid JSON: {exc}") from exc
-    path = pathlib.Path(records_path)
-    existing = read_records(path) if path.exists() else []
-    existing_ids = [record.get("id") for record in existing]
-    stored = build_stored_record(data, existing_ids)
+def _append_record(path, stored):
+    """Append one stored record line without touching the bytes stored.
+
+    When the file is not empty and its last byte is not a newline,
+    the missing newline is written first, so the bytes already
+    stored stay an untouched prefix of the file.
+    """
     separator = ""
     if path.exists() and path.stat().st_size > 0:
         with path.open("rb") as handle:
@@ -188,7 +245,87 @@ def capture(input_path, records_path):
                 separator = "\n"
     with path.open("a", encoding="utf-8") as handle:
         handle.write(separator + json.dumps(stored, sort_keys=True) + "\n")
+
+
+def capture(input_path, records_path, judgments=None):
+    input_file = pathlib.Path(input_path)
+    try:
+        data = json.loads(input_file.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RecordError(f"input file holds invalid JSON: {exc}") from exc
+    path = pathlib.Path(records_path)
+    existing = read_records(path) if path.exists() else []
+    existing_ids = [record.get("id") for record in existing]
+    stored = build_stored_record(data, existing_ids, judgments=judgments)
+    _append_record(path, stored)
     return stored
+
+
+def build_confirmation(data, records, class_list=None):
+    """The stored record a confirmation appends, or a refusal.
+
+    A confirmation names one record and one class. The appended
+    record copies the named record exactly, points corrects at it,
+    and carries the confirmed state, so the original line is never
+    edited and the confirmed class is what the class history
+    counts for that record from then on.
+    """
+    if class_list is None:
+        class_list = load_class_list()
+    if not isinstance(data, dict):
+        raise RecordError("confirmation must be a JSON object")
+    unknown = sorted(set(data) - set(CONFIRMATION_FIELDS))
+    if unknown:
+        raise RecordError(f"unknown field: {unknown[0]}")
+    for field in CONFIRMATION_FIELDS:
+        if field not in data or not isinstance(data[field], str) or not data[field].strip():
+            raise RecordError(f"missing field: {field}")
+    target_id = data["record"]
+    class_id = data["class"]
+    by_id = {record["id"]: record for record in records}
+    if target_id not in by_id:
+        raise RecordError(f"record not found: {target_id}")
+    for record in records:
+        if record.get("corrects") == target_id and record.get("review_state") == "confirmed":
+            raise RecordError(f"record already confirmed: {target_id}")
+    target = by_id[target_id]
+    if target.get("review_state") != "proposed":
+        raise RecordError(f"record carries no proposal under review: {target_id}")
+    if class_id == NEW_CLASS_LABEL:
+        raise RecordError(f"class names no class on the books: {class_id}")
+    known = {entry["id"] for entry in class_list["classes"]} | {UNCLASSIFIED}
+    if class_id not in known:
+        raise RecordError(f"unknown class: {class_id}")
+    new_id = target_id + CONFIRMED_SUFFIX
+    # The scan above catches a confirmation written by this tool. This
+    # second check catches a hand-forged entry already holding the id
+    # the confirmation would take, which the scan cannot see.
+    if new_id in by_id:
+        raise RecordError(f"record already confirmed: {target_id}")
+    entry = {field: target[field] for field in REQUIRED_FIELDS}
+    entry["id"] = new_id
+    entry["corrects"] = target_id
+    entry["rescue_class"] = classify(entry, class_list)
+    entry["review_state"] = "confirmed"
+    entry["confirmed_class"] = class_id
+    if "proposed_class" in target:
+        entry["proposed_class"] = target["proposed_class"]
+    if "quality_flag" in target:
+        entry["quality_flag"] = target["quality_flag"]
+    return entry
+
+
+def confirm(confirmation_path, records_path):
+    input_file = pathlib.Path(confirmation_path)
+    try:
+        data = json.loads(input_file.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RecordError(f"input file holds invalid JSON: {exc}") from exc
+    path = pathlib.Path(records_path)
+    existing = read_records(path)
+    entry = build_confirmation(data, existing)
+    _append_record(path, entry)
+    return entry
 
 
 def render_list(records):
@@ -213,7 +350,21 @@ def render_list(records):
 def render_proposals(records, class_list=None):
     if class_list is None:
         class_list = load_class_list()
-    present = {record["rescue_class"] for record in records}
+    confirmed = {
+        record["corrects"]
+        for record in records
+        if record.get("review_state") == "confirmed" and "corrects" in record
+    }
+    present = set()
+    for record in records:
+        if record.get("review_state") == "confirmed":
+            present.add(record["confirmed_class"])
+        elif record["id"] in confirmed:
+            continue
+        else:
+            present.add(record["rescue_class"])
+    # A records file holding no confirmation counts every stored
+    # rescue_class, exactly as Round 1 counted it.
     known = {entry["id"] for entry in class_list["classes"]} | {UNCLASSIFIED}
     unknown = sorted(present - known)
     if unknown:

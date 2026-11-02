@@ -1,0 +1,15 @@
+{
+  "judgment_point": "quality",
+  "request": {
+    "human_action": "The maintainer checked the source by hand and wrote a note for follow up",
+    "outcome": "The number was explained in the note and no run was changed",
+    "record_id": "fox-003",
+    "stalled": "A dashboard number looked odd for a reason nobody could name"
+  },
+  "response": {
+    "confidence": 0.93,
+    "kind": "score",
+    "score": 0.3
+  },
+  "synthetic": true
+}

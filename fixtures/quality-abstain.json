@@ -1,0 +1,13 @@
+{
+  "judgment_point": "quality",
+  "request": {
+    "human_action": "The maintainer edited the file by hand and sent it on",
+    "outcome": "The file went out with the right heading",
+    "record_id": "fox-004",
+    "stalled": "The generated file carried a wrong heading that the checker passed"
+  },
+  "response": {
+    "kind": "abstention"
+  },
+  "synthetic": true
+}
