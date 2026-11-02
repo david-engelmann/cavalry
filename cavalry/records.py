@@ -51,6 +51,8 @@ def load_class_list():
         raise RecordError("class list must be a JSON object")
     if "version" not in data:
         raise RecordError("class list is missing field: version")
+    if not isinstance(data["version"], int) or isinstance(data["version"], bool):
+        raise RecordError("class list version must be a whole number")
     if not isinstance(data.get("classes"), list):
         raise RecordError("class list is missing field: classes")
     if not isinstance(data.get("unclassified_proposal"), str) or not data[
@@ -64,6 +66,15 @@ def load_class_list():
         if not isinstance(entry.get("id"), str) or not entry["id"].strip():
             raise RecordError(f"class list entry {index} is missing field: id")
         entry_id = entry["id"]
+        if entry_id == UNCLASSIFIED:
+            raise RecordError(
+                "class list names a class with the unclassified value: "
+                + entry_id
+            )
+        if any(existing["id"] == entry_id for existing in classes):
+            raise RecordError(
+                "class list holds two classes with the id: " + entry_id
+            )
         keywords = entry.get("keywords")
         if (
             not isinstance(keywords, list)
@@ -226,7 +237,13 @@ def read_records(records_path):
             parsed = json.loads(line)
         except json.JSONDecodeError as exc:
             raise RecordError(f"records file holds an invalid line: {exc}") from exc
-        records.append(_validate_stored(parsed, number))
+        record = _validate_stored(parsed, number)
+        if any(existing["id"] == record["id"] for existing in records):
+            raise RecordError(
+                f"records file holds an invalid line {number}: "
+                f"duplicate record id: {record['id']}"
+            )
+        records.append(record)
     return records
 
 
