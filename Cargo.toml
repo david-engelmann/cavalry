@@ -1,0 +1,14 @@
+[package]
+name = "cavalry"
+version = "0.1.0"
+edition = "2024"
+description = "The book of the rescues only a human could make, recorded one JSON line at a time"
+license = "MIT"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+thiserror = "2"
+
+[dev-dependencies]
+sha2 = "0.10"
