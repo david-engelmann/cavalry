@@ -636,20 +636,22 @@ fn validate_stored(data: &Value) -> Result<(), String> {
 /// Read a records file into the records it holds.
 ///
 /// A file that does not stand is refused as not found. A line
-/// that does not parse or does not hold the stored shape is
-/// refused with the line's number standing in the refusal, and
-/// a line that does not parse carries the JSON reader's own
-/// defect text. A repeated record identifier is refused at the
-/// line that repeats it. Blank lines are skipped, and the line
-/// numbers count every line, blank or not.
+/// that does not parse is refused without its number, carrying
+/// the JSON reader's own defect text, and a line that parses
+/// but does not hold the stored shape is refused with the
+/// line's number standing in the refusal. A repeated record
+/// identifier is refused at the line that repeats it. Blank
+/// lines are skipped, and the line numbers count every line,
+/// blank or not.
 pub fn read_records(path: &Path) -> Result<Vec<Value>, RecordError> {
-    if !path.exists() {
+    let open = pyjson::py_path_folded(path);
+    if !open.exists() {
         return refused(format!(
             "records file not found: {}",
             pyjson::py_path_normalized(path)
         ));
     }
-    let bytes = match std::fs::read(path) {
+    let bytes = match std::fs::read(&open) {
         Ok(bytes) => bytes,
         Err(error) => return system(&error, path),
     };
@@ -708,14 +710,15 @@ pub fn read_records(path: &Path) -> Result<Vec<Value>, RecordError> {
 pub fn append_record(path: &Path, record: &Value) -> Result<(), RecordError> {
     let mut line = pyjson::dumps_compact(record);
     line.push('\n');
+    let open = pyjson::py_path_folded(path);
     let mut separator = false;
-    if path.exists() {
-        let metadata = match std::fs::metadata(path) {
+    if open.exists() {
+        let metadata = match std::fs::metadata(&open) {
             Ok(metadata) => metadata,
             Err(error) => return system(&error, path),
         };
         if metadata.len() > 0 {
-            let mut file = match std::fs::File::open(path) {
+            let mut file = match std::fs::File::open(&open) {
                 Ok(file) => file,
                 Err(error) => return system(&error, path),
             };
@@ -740,7 +743,7 @@ pub fn append_record(path: &Path, record: &Value) -> Result<(), RecordError> {
     let mut file = match std::fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(path)
+        .open(&open)
     {
         Ok(file) => file,
         Err(error) => return system(&error, path),
@@ -759,7 +762,7 @@ pub fn append_record(path: &Path, record: &Value) -> Result<(), RecordError> {
 /// confirmation input are both read this way, and both are
 /// named the input file in the discipline's lines.
 fn read_input(path: &Path) -> Result<Value, RecordError> {
-    let bytes = match std::fs::read(path) {
+    let bytes = match std::fs::read(pyjson::py_path_folded(path)) {
         Ok(bytes) => bytes,
         Err(error) => return system(&error, path),
     };
@@ -791,7 +794,7 @@ pub fn capture(
     source: Option<&dyn JudgmentSource>,
 ) -> Result<Value, RecordError> {
     let data = read_input(input_path)?;
-    let existing = if records_path.exists() {
+    let existing = if pyjson::py_path_folded(records_path).exists() {
         read_records(records_path)?
     } else {
         Vec::new()

@@ -235,7 +235,11 @@ fn code_only(source: &str) -> String {
 /// in the literal code, and in the paths the source's use
 /// declarations resolve to, since a grouped import never
 /// spells the path it names whole in the text and the literal
-/// reading alone waves it through.
+/// reading alone waves it through. A glob arm resolves to its
+/// module with the glob standing, and it counts for every
+/// marker the module itself is or that stands under the
+/// module, since the glob brings in everything the module
+/// names and the code then speaks in the bare name.
 fn forbidden_uses(source: &str) -> Vec<String> {
     let code = code_only(source);
     let mut found: Vec<String> = forbidden_markers()
@@ -244,7 +248,19 @@ fn forbidden_uses(source: &str) -> Vec<String> {
         .collect();
     let resolved = resolved_use_paths(&code);
     for marker in forbidden_markers() {
-        if !found.contains(&marker) && resolved.iter().any(|path| path.contains(marker.as_str())) {
+        if found.contains(&marker) {
+            continue;
+        }
+        let hit = resolved.iter().any(|path| {
+            if path.contains(marker.as_str()) {
+                return true;
+            }
+            match path.strip_suffix("::*") {
+                Some(module) => marker == module || marker.starts_with(&format!("{module}::")),
+                None => false,
+            }
+        });
+        if hit {
             found.push(marker);
         }
     }
@@ -424,5 +440,48 @@ fn grouped_import_forms_are_forbidden_uses() {
         );
     }
     let benign = "use std::collections::{BTreeMap, HashMap};\n";
+    assert!(forbidden_uses(benign).is_empty());
+}
+
+#[test]
+fn glob_import_forms_are_forbidden_uses() {
+    // A glob arm names a module and everything standing
+    // under it, so a capability the glob's module carries
+    // is a use of it though no path in the source spells
+    // the capability whole and the code speaks in the bare
+    // name the glob brought in. Each form below smuggles
+    // one forbidden capability in glob form.
+    let cases: [(&str, &str); 5] = [
+        (
+            concat!("use std::pro", "cess::*;\nlet _ = Command::new(\"x\");\n"),
+            concat!("std::process::", "Command"),
+        ),
+        (
+            concat!("use std::{pro", "cess::*};\nlet _ = Command::new(\"x\");\n"),
+            concat!("std::process::", "Command"),
+        ),
+        (concat!("use std::", "net::*;\n"), concat!("std::", "net")),
+        (
+            concat!("use std::net::*;\nlet _ = Tcp", "Stream::connect(\"x\");\n"),
+            concat!("Tcp", "Stream"),
+        ),
+        (
+            concat!("use std::net::*;\nlet _ = Udp", "Socket::bind(\"x\");\n"),
+            concat!("Udp", "Socket"),
+        ),
+    ];
+    for (source, marker) in cases {
+        let found = forbidden_uses(source);
+        assert!(
+            found.iter().any(|item| item == marker),
+            "{:?} must name {:?}, found {:?}",
+            source,
+            marker,
+            found
+        );
+    }
+    let benign = "use std::collections::*;\n";
+    assert!(forbidden_uses(benign).is_empty());
+    let benign = "use std::fmt::*;\n";
     assert!(forbidden_uses(benign).is_empty());
 }

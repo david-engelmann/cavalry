@@ -298,6 +298,23 @@ fn trusted_edges_at_the_contract_threshold() {
 }
 
 #[test]
+fn the_trust_threshold_is_the_contract_value() {
+    // The edge test above pins trust relative to the
+    // threshold constant, so it cannot see the constant's
+    // own value drift. The contract value is asserted here
+    // as a literal, beside a judgment trusted at the literal
+    // value itself, so an edit to the constant fails this
+    // test for its own reason.
+    assert_eq!(CONFIDENCE_THRESHOLD, 0.6);
+    let at_the_value = Value::object(vec![
+        ("kind".to_string(), text("score")),
+        ("score".to_string(), Value::Float(0.5)),
+        ("confidence".to_string(), Value::Float(0.6)),
+    ]);
+    assert!(trusted(&at_the_value));
+}
+
+#[test]
 fn check_answer_passes_a_well_formed_answer_through() {
     let answer = Value::object(vec![
         ("kind".to_string(), text("choice")),

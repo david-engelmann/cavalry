@@ -614,3 +614,50 @@ pub fn trusted(response: &Value) -> bool {
         None => false,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A request standing in a chain of nested lists, one
+    /// list per step, with nothing at the foot, so the
+    /// chain's own container depth is the count of its lists.
+    fn nested_request(lists: usize) -> Value {
+        let mut value = Value::Null;
+        for _ in 0..lists {
+            value = Value::List(vec![value]);
+        }
+        value
+    }
+
+    #[test]
+    fn request_key_carries_at_the_ceiling_and_refuses_past_it() {
+        // The key document names the point and the request
+        // over the request itself, so its deepest container
+        // path is the request's own depth plus one for the
+        // document's root. A chain of 9990 lists therefore
+        // stands at path 9991, the ceiling CV-42 states, and
+        // its key builds; a chain of 9991 lists stands at
+        // path 9992 and the key building refuses with the
+        // uncaught kind. No command line reaches this
+        // ceiling, since load validation refuses a deep
+        // request's shape first, so the pin stands at the
+        // key building itself. The building recurses as the
+        // tool's walks do, so it runs on a stack sized as
+        // the binary's own is.
+        std::thread::Builder::new()
+            .stack_size(512 * 1024 * 1024)
+            .spawn(|| {
+                let carried = request_key("classification", &nested_request(9990));
+                assert!(carried.is_ok(), "a key at the ceiling builds");
+                let refused = request_key("classification", &nested_request(9991));
+                assert!(
+                    matches!(refused, Err(JudgmentError::Uncaught(_))),
+                    "a key past the ceiling refuses uncaught"
+                );
+            })
+            .expect("the thread stands")
+            .join()
+            .expect("the key building answers");
+    }
+}

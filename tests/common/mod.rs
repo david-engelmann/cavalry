@@ -340,6 +340,29 @@ pub fn run_cli_at_root(args: &[&str]) -> CliOutput {
     run_cli(args, &root())
 }
 
+/// Run the binary with its standard output standing on a
+/// pipe no one reads, so every byte it prints meets a dead
+/// output, and return its exit code and standard error. The
+/// reading end is dropped before the binary starts, so the
+/// pipe is dead from the first byte and never raced, and a
+/// byte count the output reaches is the only variable.
+pub fn run_cli_on_closed_stdout(args: &[&str], cwd: &std::path::Path) -> CliOutput {
+    let (reader, writer) = std::io::pipe().expect("pipe stands");
+    drop(reader);
+    let output = Command::new(env!("CARGO_BIN_EXE_cavalry"))
+        .args(args)
+        .current_dir(cwd)
+        .stdout(writer)
+        .stderr(std::process::Stdio::piped())
+        .output()
+        .expect("binary runs");
+    CliOutput {
+        code: output.status.code().unwrap_or(-1),
+        stdout: String::new(),
+        stderr: String::from_utf8(output.stderr).expect("stderr is UTF-8"),
+    }
+}
+
 pub fn write_json(path: &std::path::Path, data: &Value) {
     let text = pyjson::dumps_compact(data);
     std::fs::write(path, text).expect("file written");

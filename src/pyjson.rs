@@ -2120,6 +2120,19 @@ pub fn py_path_normalized(path: &std::path::Path) -> String {
     render_path_bytes(&normalized_path_bytes(path))
 }
 
+/// The path the file operations open, the path library's
+/// folded form standing as a path itself. The Python tool
+/// opens the paths the path library built, and that library
+/// folds a path when it is built, so the path opened is the
+/// folded one: an empty path opens as the current directory,
+/// and a redundant separator or a dot component or a trailing
+/// slash stands folded away before the open, exactly as it
+/// stands in the folded str the error lines name.
+pub fn py_path_folded(path: &std::path::Path) -> std::path::PathBuf {
+    use std::os::unix::ffi::OsStringExt;
+    std::ffi::OsString::from_vec(normalized_path_bytes(path)).into()
+}
+
 /// The display form of a name joined onto a directory path, as
 /// the path library joins it. The directory folds first, then
 /// the name stands after one slash, and a directory folding to a

@@ -64,11 +64,39 @@ enum Command {
     Confirm(ConfirmArgs),
 }
 
+/// The value parser of a positional path argument, reading
+/// the value as the path it stands for, the empty string
+/// included. The path parser clap derives refuses an empty
+/// value in its own voice, ahead of the tool, whose path
+/// discipline answers an empty path in the path library's
+/// form, as the current directory. A positional path is
+/// therefore read by this parser, so the empty value reaches
+/// the tool's own handling in every positional slot, and a
+/// value whose bytes are not text reaches it unchanged, as
+/// it reaches the Python parser.
+#[derive(Clone, Debug)]
+struct PathValueParser;
+
+impl clap::builder::TypedValueParser for PathValueParser {
+    type Value = PathBuf;
+
+    fn parse_ref(
+        &self,
+        _cmd: &clap::Command,
+        _arg: Option<&clap::Arg>,
+        value: &std::ffi::OsStr,
+    ) -> Result<Self::Value, clap::Error> {
+        Ok(PathBuf::from(value))
+    }
+}
+
 #[derive(Args)]
 struct CaptureArgs {
     /// Path to the rescue record JSON file to store.
+    #[arg(value_parser = PathValueParser)]
     input_file: PathBuf,
     /// Path to the records file to append to.
+    #[arg(value_parser = PathValueParser)]
     records_file: PathBuf,
     /// Path to a directory of recorded judgment fixtures.
     #[arg(long)]
@@ -78,20 +106,24 @@ struct CaptureArgs {
 #[derive(Args)]
 struct ListArgs {
     /// Path to the records file to read.
+    #[arg(value_parser = PathValueParser)]
     records_file: PathBuf,
 }
 
 #[derive(Args)]
 struct ProposeArgs {
     /// Path to the records file to read.
+    #[arg(value_parser = PathValueParser)]
     records_file: PathBuf,
 }
 
 #[derive(Args)]
 struct ConfirmArgs {
     /// Path to the confirmation JSON file to store.
+    #[arg(value_parser = PathValueParser)]
     confirmation_file: PathBuf,
     /// Path to the records file to append to.
+    #[arg(value_parser = PathValueParser)]
     records_file: PathBuf,
 }
 
@@ -536,6 +568,18 @@ fn preprocess(tokens: &[OsString]) -> Preprocess {
                         value_slot = Some(out.len() - 1);
                     }
                 }
+                continue;
+            }
+            // A long token no declared flag takes hold of is
+            // a value when it reads as a positional string, as
+            // the Python parser reads a token carrying a space
+            // as a value whatever its prefix. The space test
+            // stands ahead of the option reading here, as it
+            // stands in the classification itself, or a file
+            // named with two dashes and a space could never
+            // reach its slot.
+            if reads_as_positional(&text) {
+                values.push(token.clone());
                 continue;
             }
             // An option this parser does not declare is only
