@@ -239,7 +239,13 @@ fn code_only(source: &str) -> String {
 /// module with the glob standing, and it counts for every
 /// marker the module itself is or that stands under the
 /// module, since the glob brings in everything the module
-/// names and the code then speaks in the bare name.
+/// names and the code then speaks in the bare name. A bare
+/// module import resolves to the module itself, and it
+/// counts for a marker standing under the module when the
+/// code carries the marker's tail written from the
+/// module's own name, since the import leaves the code
+/// speaking from that name. An import whose code never
+/// writes the tail is not a finding.
 fn forbidden_uses(source: &str) -> Vec<String> {
     let code = code_only(source);
     let mut found: Vec<String> = forbidden_markers()
@@ -255,10 +261,15 @@ fn forbidden_uses(source: &str) -> Vec<String> {
             if path.contains(marker.as_str()) {
                 return true;
             }
-            match path.strip_suffix("::*") {
-                Some(module) => marker == module || marker.starts_with(&format!("{module}::")),
-                None => false,
+            if let Some(module) = path.strip_suffix("::*") {
+                return marker == module || marker.starts_with(&format!("{module}::"));
             }
+            if marker.starts_with(&format!("{path}::")) {
+                let last = path.rsplit("::").next().unwrap_or(path.as_str());
+                let written = &marker[path.len() - last.len()..];
+                return code.contains(written);
+            }
+            false
         });
         if hit {
             found.push(marker);
@@ -483,5 +494,55 @@ fn glob_import_forms_are_forbidden_uses() {
     let benign = "use std::collections::*;\n";
     assert!(forbidden_uses(benign).is_empty());
     let benign = "use std::fmt::*;\n";
+    assert!(forbidden_uses(benign).is_empty());
+}
+
+#[test]
+fn bare_module_import_forms_are_forbidden_uses() {
+    // A bare module import names the module itself and
+    // the code then speaks from the module's own name, so
+    // the capability's full path never stands in the
+    // source though the capability is used. Each form
+    // below smuggles the path shaped marker in bare
+    // module form, one with the import written plain and
+    // one with it grouped under its parent.
+    let cases: [(&str, &str); 2] = [
+        (
+            concat!(
+                "use std::pro",
+                "cess;\nlet _ = pro",
+                "cess::Command::new(\"x\");\n"
+            ),
+            concat!("std::process::", "Command"),
+        ),
+        (
+            concat!(
+                "use std::{pro",
+                "cess};\nlet _ = pro",
+                "cess::Command::new(\"x\");\n"
+            ),
+            concat!("std::process::", "Command"),
+        ),
+    ];
+    for (source, marker) in cases {
+        let found = forbidden_uses(source);
+        assert!(
+            found.iter().any(|item| item == marker),
+            "{:?} must name {:?}, found {:?}",
+            source,
+            marker,
+            found
+        );
+    }
+    // A bare import of the module whose code never writes
+    // the forbidden member's name is not a finding, and
+    // neither is an import of an unrelated module.
+    let benign = concat!(
+        "use std::pro",
+        "cess;\nfn main() { pro",
+        "cess::exit(0); }\n"
+    );
+    assert!(forbidden_uses(benign).is_empty());
+    let benign = "use std::collections;\nlet _ = collections::BTreeMap::<String, String>::new();\n";
     assert!(forbidden_uses(benign).is_empty());
 }
