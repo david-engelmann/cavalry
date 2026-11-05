@@ -5,6 +5,7 @@
 //!   list     print the book as a list
 //!   propose  print the proposals a review works from
 //!   confirm  store the confirmation a review settled
+//!   queue    print the records still waiting for a human
 //!
 //! The argument parsing is clap, adopted under the maintainer's
 //! tool choice ruling. Before clap sees the arguments, a
@@ -62,6 +63,9 @@ enum Command {
     /// Store the confirmation a review settled.
     #[command(infer_long_args = true, args_override_self = true)]
     Confirm(ConfirmArgs),
+    /// Print the records still waiting for a human.
+    #[command(infer_long_args = true, args_override_self = true)]
+    Queue(QueueArgs),
 }
 
 /// The value parser of a positional path argument, reading
@@ -112,6 +116,13 @@ struct ListArgs {
 
 #[derive(Args)]
 struct ProposeArgs {
+    /// Path to the records file to read.
+    #[arg(value_parser = PathValueParser)]
+    records_file: PathBuf,
+}
+
+#[derive(Args)]
+struct QueueArgs {
     /// Path to the records file to read.
     #[arg(value_parser = PathValueParser)]
     records_file: PathBuf,
@@ -241,6 +252,12 @@ fn cmd_propose(args: &ProposeArgs) -> anyhow::Result<i32> {
     let class_list = records::shipped_class_list();
     let text = records::render_proposals(&records_read, &class_list).map_err(records_failure)?;
     print_out(&text)?;
+    Ok(0)
+}
+
+fn cmd_queue(args: &QueueArgs) -> anyhow::Result<i32> {
+    let records_read = records::read_records(&args.records_file).map_err(records_failure)?;
+    print_out(&records::render_queue(&records_read))?;
     Ok(0)
 }
 
@@ -679,6 +696,7 @@ fn run() -> ExitCode {
         Command::List(args) => cmd_list(args),
         Command::Propose(args) => cmd_propose(args),
         Command::Confirm(args) => cmd_confirm(args),
+        Command::Queue(args) => cmd_queue(args),
     };
     match outcome {
         Ok(code) => ExitCode::from(code as u8),
