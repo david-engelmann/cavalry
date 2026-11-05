@@ -936,6 +936,59 @@ pub fn render_list(records: &[Value]) -> String {
     out
 }
 
+/// Render the queue, one line for each record whose current
+/// state still waits for a human decision.
+///
+/// A record a confirmation has settled stands settled through
+/// the record that confirms it, under the same supersession
+/// the proposals document counts by, and a record in the
+/// confirmed state stands settled in its own right, so neither
+/// prints. Every other record prints when its review state is
+/// proposed or unreviewed, and a record carrying no review
+/// state reads as unreviewed, as it reads everywhere in the
+/// discipline. The line carries the five fields the list line
+/// carries and then the reason the record waits, the proposed
+/// class it awaits confirmation as or the review it awaits,
+/// and a record carrying the below-bar quality flag carries
+/// that standing as the tail of its reason. The flag alone
+/// never brings a record into the queue, and a book in which
+/// no record waits renders as the empty text.
+pub fn render_queue(records: &[Value]) -> String {
+    let mut settled: Vec<&str> = Vec::new();
+    for record in records {
+        if record.get("review_state").and_then(Value::as_str) == Some("confirmed")
+            && let Some(corrects) = record.get("corrects").and_then(Value::as_str)
+        {
+            settled.push(corrects);
+        }
+    }
+    let mut out = String::new();
+    for record in records {
+        let field = |name: &str| record.get(name).and_then(Value::as_str).unwrap_or("");
+        if settled.contains(&field("id")) {
+            continue;
+        }
+        let mut reason = match record.get("review_state").and_then(Value::as_str) {
+            Some("proposed") => format!("awaiting confirmation as {}", field("proposed_class")),
+            Some("confirmed") => continue,
+            _ => "awaiting review".to_string(),
+        };
+        if record.get("quality_flag").and_then(Value::as_str) == Some(BELOW_BAR_FLAG) {
+            reason.push_str(" and flagged below-bar");
+        }
+        out.push_str(&format!(
+            "{} {} {} {} {} {}\n",
+            field("id"),
+            field("rescue_class"),
+            field("run_ref"),
+            field("occurred_at"),
+            field("outcome"),
+            reason
+        ));
+    }
+    out
+}
+
 /// Render the proposals a review works from, counting the book
 /// under the class list given.
 ///
