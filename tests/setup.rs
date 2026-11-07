@@ -156,6 +156,17 @@ fn the_standing_boundary_statements_name_westering_and_arvin() {
         !contract.contains("no rung of prod's ladder") && !contract.contains("deadman's"),
         "no standing contract statement may carry the old names"
     );
+    let round_five = contract
+        .split("Round 5 ports cavalry")
+        .nth(1)
+        .unwrap()
+        .split("CV-37.")
+        .next()
+        .unwrap();
+    assert!(
+        !carries_word(round_five, "prod") && !carries_word(round_five, "deadman"),
+        "the Round 5 preamble is standing text and carries neither old name as a word"
+    );
     assert!(
         contract.contains("it reimplements no automatic ladder from prod"),
         "the Round 1 preamble is historical recounting and stands under CV-53"

@@ -43,15 +43,15 @@ The command prints the book at the top of this page, one line per record with it
 `cavalry capture <input-file> <records-file>` stores one rescue record. The input is one JSON object naming who was rescued, who rescued, what stalled, what the human did, when it happened, and what happened after. The tool validates the record, classifies it against the class list at cavalry/classes.json, and appends it to the records file without touching the bytes already stored. A record whose rescuer is not a human is refused, and nothing is written.
 
 ```console
-$ cat rescue.json
-{"id": "rec-101", "run_ref": "run-synthetic-101", "rescued_role": "support-operator", "rescuer_role": "on-call-operator", "rescuer_kind": "human", "stalled": "The task stalled because the prompt wording sent the worker in a circle", "human_action": "The operator rephrased the prompt and restarted the task", "occurred_at": "2026-01-05T09:30:00Z", "outcome": "The task finished on the next run"}
-$ ./target/debug/cavalry capture rescue.json book.jsonl
+$ cat examples/rescue.json
+{"human_action":"The operator rephrased the prompt and restarted the task","id":"rec-101","occurred_at":"2026-01-05T09:30:00Z","outcome":"The task finished on the next run","rescued_role":"support-operator","rescuer_kind":"human","rescuer_role":"on-call-operator","run_ref":"run-synthetic-101","stalled":"The task stalled because the prompt wording sent the worker in a circle"}
+$ ./target/debug/cavalry capture examples/rescue.json book.jsonl
 stored rec-101 as prompt-rephrase
 $ cat book.jsonl
 {"human_action": "The operator rephrased the prompt and restarted the task", "id": "rec-101", "occurred_at": "2026-01-05T09:30:00Z", "outcome": "The task finished on the next run", "rescue_class": "prompt-rephrase", "rescued_role": "support-operator", "rescuer_kind": "human", "rescuer_role": "on-call-operator", "review_state": "unreviewed", "run_ref": "run-synthetic-101", "stalled": "The task stalled because the prompt wording sent the worker in a circle"}
 ```
 
-With `--fixtures <directory>` the capture also runs the recorded judgment seam. A trusted classification answer attaches a proposed class to the record, and a trusted quality answer below the bar flags the record, and an abstention or an answer below the trust threshold leaves the record unreviewed, exactly as a capture with no fixtures leaves it.
+With `--fixtures <directory>` the capture also runs the recorded judgment seam. A trusted classification answer attaches a proposed class to the record and moves it to the proposed state, and a trusted quality score below the bar sets the record's quality flag, and quality alone never moves the review state. An abstention or an untrusted answer at the classification point leaves the record unreviewed, exactly as a capture with no fixtures leaves it.
 
 ### list
 

@@ -1,0 +1,1 @@
+{"human_action":"The operator rephrased the prompt and restarted the task","id":"rec-101","occurred_at":"2026-01-05T09:30:00Z","outcome":"The task finished on the next run","rescued_role":"support-operator","rescuer_kind":"human","rescuer_role":"on-call-operator","run_ref":"run-synthetic-101","stalled":"The task stalled because the prompt wording sent the worker in a circle"}
