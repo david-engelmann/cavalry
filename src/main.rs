@@ -40,6 +40,7 @@ use cavalry::records::{self, RecordError};
 
 #[derive(Parser)]
 #[command(
+    about = "The troop that rides in after the fact and writes down what a human responder actually did, because the agent log alone cannot be trusted.",
     subcommand_required = true,
     infer_long_args = true,
     disable_help_subcommand = true

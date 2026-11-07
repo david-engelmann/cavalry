@@ -2,7 +2,7 @@
 name = "cavalry"
 version = "0.1.0"
 edition = "2024"
-description = "The book of the rescues only a human could make, recorded one JSON line at a time"
+description = "The troop that rides in after the fact and writes down what a human responder actually did, because the agent log alone cannot be trusted."
 license = "MIT"
 
 [dependencies]

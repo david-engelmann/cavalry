@@ -1717,7 +1717,7 @@
    "expect": {
     "code": 2,
     "stdout": "",
-    "stderr": "Usage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
+    "stderr": "The troop that rides in after the fact and writes down what a human responder actually did, because the agent log alone cannot be trusted.\n\nUsage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
     "files": {
      "in.json": "{\"id\": \"rec-001\", \"run_ref\": \"run-synthetic-001\", \"rescued_role\": \"support-operator\", \"rescuer_role\": \"on-call-operator\", \"rescuer_kind\": \"human\", \"stalled\": \"The task stalled because the prompt wording sent the worker in a circle\", \"human_action\": \"The operator rephrased the prompt and restarted the task\", \"occurred_at\": \"2026-01-01T09:00:00Z\", \"outcome\": \"The task finished on the next run\"}",
      "records.jsonl": "{\"human_action\": \"The operator rephrased the prompt and restarted the task\", \"id\": \"rec-001\", \"occurred_at\": \"2026-01-01T09:00:00Z\", \"outcome\": \"The task finished on the next run\", \"rescue_class\": \"prompt-rephrase\", \"rescued_role\": \"support-operator\", \"rescuer_kind\": \"human\", \"rescuer_role\": \"on-call-operator\", \"run_ref\": \"run-synthetic-001\", \"stalled\": \"The task stalled because the prompt wording sent the worker in a circle\"}\n{\"human_action\": \"The reviewer killed the run and removed the bad output\", \"id\": \"rec-002\", \"occurred_at\": \"2026-01-02T11:30:00Z\", \"outcome\": \"The bad output was removed and the run was queued again\", \"rescue_class\": \"run-interruption\", \"rescued_role\": \"reviewer\", \"rescuer_kind\": \"human\", \"rescuer_role\": \"on-call-operator\", \"run_ref\": \"run-synthetic-002\", \"stalled\": \"The run kept writing to the wrong output and would not stop\"}\n{\"human_action\": \"The maintainer edited the file by hand and sent it on\", \"id\": \"rec-003\", \"occurred_at\": \"2026-01-03T14:15:00Z\", \"outcome\": \"The file went out with the right heading\", \"rescue_class\": \"manual-edit\", \"rescued_role\": \"data-steward\", \"rescuer_kind\": \"human\", \"rescuer_role\": \"maintainer\", \"run_ref\": \"run-synthetic-003\", \"stalled\": \"The generated file carried a wrong heading that the checker passed\"}\n{\"human_action\": \"The maintainer checked the source by hand and wrote a note for follow up\", \"id\": \"rec-004\", \"occurred_at\": \"2026-01-04T16:45:00Z\", \"outcome\": \"The number was explained in the note and no run was changed\", \"rescue_class\": \"unclassified\", \"rescued_role\": \"support-operator\", \"rescuer_kind\": \"human\", \"rescuer_role\": \"maintainer\", \"run_ref\": \"run-synthetic-004\", \"stalled\": \"A dashboard number looked odd for a reason nobody could name\"}\n",
@@ -1740,7 +1740,7 @@
    ],
    "expect": {
     "code": 0,
-    "stdout": "Usage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
+    "stdout": "The troop that rides in after the fact and writes down what a human responder actually did, because the agent log alone cannot be trusted.\n\nUsage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
     "stderr": "",
     "files": {
      "in.json": "{\"id\": \"rec-001\", \"run_ref\": \"run-synthetic-001\", \"rescued_role\": \"support-operator\", \"rescuer_role\": \"on-call-operator\", \"rescuer_kind\": \"human\", \"stalled\": \"The task stalled because the prompt wording sent the worker in a circle\", \"human_action\": \"The operator rephrased the prompt and restarted the task\", \"occurred_at\": \"2026-01-01T09:00:00Z\", \"outcome\": \"The task finished on the next run\"}",
@@ -1764,7 +1764,7 @@
    ],
    "expect": {
     "code": 0,
-    "stdout": "Usage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
+    "stdout": "The troop that rides in after the fact and writes down what a human responder actually did, because the agent log alone cannot be trusted.\n\nUsage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
     "stderr": "",
     "files": {
      "in.json": "{\"id\": \"rec-001\", \"run_ref\": \"run-synthetic-001\", \"rescued_role\": \"support-operator\", \"rescuer_role\": \"on-call-operator\", \"rescuer_kind\": \"human\", \"stalled\": \"The task stalled because the prompt wording sent the worker in a circle\", \"human_action\": \"The operator rephrased the prompt and restarted the task\", \"occurred_at\": \"2026-01-01T09:00:00Z\", \"outcome\": \"The task finished on the next run\"}",
@@ -1788,7 +1788,7 @@
    ],
    "expect": {
     "code": 0,
-    "stdout": "Usage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
+    "stdout": "The troop that rides in after the fact and writes down what a human responder actually did, because the agent log alone cannot be trusted.\n\nUsage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
     "stderr": "",
     "files": {
      "in.json": "{\"id\": \"rec-001\", \"run_ref\": \"run-synthetic-001\", \"rescued_role\": \"support-operator\", \"rescuer_role\": \"on-call-operator\", \"rescuer_kind\": \"human\", \"stalled\": \"The task stalled because the prompt wording sent the worker in a circle\", \"human_action\": \"The operator rephrased the prompt and restarted the task\", \"occurred_at\": \"2026-01-01T09:00:00Z\", \"outcome\": \"The task finished on the next run\"}",
@@ -1963,7 +1963,7 @@
    ],
    "expect": {
     "code": 0,
-    "stdout": "Usage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
+    "stdout": "The troop that rides in after the fact and writes down what a human responder actually did, because the agent log alone cannot be trusted.\n\nUsage: cavalry <COMMAND>\n\nCommands:\n  capture  Store one rescue record from an input file\n  list     Print the book as a list\n  propose  Print the proposals a review works from\n  confirm  Store the confirmation a review settled\n  queue    Print the records still waiting for a human\n\nOptions:\n  -h, --help  Print help\n",
     "stderr": "",
     "files": {
      "in.json": "{\"id\": \"rec-001\", \"run_ref\": \"run-synthetic-001\", \"rescued_role\": \"support-operator\", \"rescuer_role\": \"on-call-operator\", \"rescuer_kind\": \"human\", \"stalled\": \"The task stalled because the prompt wording sent the worker in a circle\", \"human_action\": \"The operator rephrased the prompt and restarted the task\", \"occurred_at\": \"2026-01-01T09:00:00Z\", \"outcome\": \"The task finished on the next run\"}",
