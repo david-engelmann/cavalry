@@ -12,9 +12,9 @@
 //! stored, builds the confirmation entry that closes a review,
 //! and renders the book as a list and as the proposals a review
 //! works from. Cavalry performs no rescue. It keeps the record
-//! of the ones a human performed, and the ladder prod climbs to
-//! rescue automatically is prod's own and is not reimplemented
-//! here.
+//! of the ones a human performed, and the ladder westering climbs
+//! to rescue automatically is westering's own and is not
+//! reimplemented here.
 
 use crate::judgment::{
     CLASSIFICATION, JudgmentSource, NEW_CLASS_LABEL, QUALITY, QUALITY_BAR, check_answer,

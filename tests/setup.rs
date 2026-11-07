@@ -19,7 +19,7 @@ const EXPECTED_OBLIGATIONS: [&str; 5] = [
     "CV-S1. Every recorded rescue carries who intervened, what they did, and which run it touched, and a record missing any of those fields is rejected rather than stored incomplete.",
     "CV-S2. Every rescue is classified into a named class, and a record that cannot be classified is held in an explicit unclassified state that reports itself rather than passing silently.",
     "CV-S3. Every class with at least one recorded rescue carries a drafted hook or rule meant to retire that class, and a class with rescues and no draft is a defect the tests must catch.",
-    "CV-S4. Cavalry records human rescues only, and an automatic rescue performed by prod is never written into the cavalry record as a human rescue.",
+    "CV-S4. Cavalry records human rescues only, and an automatic rescue performed by westering is never written into the cavalry record as a human rescue.",
     "CV-S5. Every fixture and example in this repo is synthetic and built for this repo, and no real trace or session data appears anywhere in the tree.",
 ];
 const EXPECTED_PREFIX: &str = "CV";
@@ -129,6 +129,92 @@ fn readme_status_reports_rounds() {
     assert!(
         found,
         "README status must report closed rounds 6 of 100 exactly"
+    );
+}
+
+const DESCRIPTION: &str = "The troop that rides in after the fact and writes down what a human responder actually did, because the agent log alone cannot be trusted.";
+
+/// Whether the text carries the word as a whole token, case
+/// insensitively, an apostrophe ending the token as it ends
+/// the possessive form.
+fn carries_word(text: &str, word: &str) -> bool {
+    text.to_lowercase()
+        .split(|ch: char| !ch.is_alphanumeric() && ch != '_')
+        .any(|token| token == word)
+}
+
+#[test]
+fn the_standing_boundary_statements_name_westering_and_arvin() {
+    let contract = std::fs::read_to_string(root().join("CONTRACT.md")).unwrap();
+    assert!(
+        contract.contains(
+            "the port reimplements no rung of westering's ladder and no switch of arvin's"
+        ),
+        "the Round 5 preamble must stand amended under CV-53"
+    );
+    assert!(
+        !contract.contains("no rung of prod's ladder") && !contract.contains("deadman's"),
+        "no standing contract statement may carry the old names"
+    );
+    let round_five = contract
+        .split("Round 5 ports cavalry")
+        .nth(1)
+        .unwrap()
+        .split("CV-37.")
+        .next()
+        .unwrap();
+    assert!(
+        !carries_word(round_five, "prod") && !carries_word(round_five, "deadman"),
+        "the Round 5 preamble is standing text and carries neither old name as a word"
+    );
+    assert!(
+        contract.contains("it reimplements no automatic ladder from prod"),
+        "the Round 1 preamble is historical recounting and stands under CV-53"
+    );
+    let agents = std::fs::read_to_string(root().join("AGENTS.md")).unwrap();
+    let annex = agents.split("## Repo annex").nth(1).unwrap();
+    assert!(annex.contains("Westering, also owned by this chat, rescues automatically"));
+    assert!(annex.contains("westering's ladder"));
+    assert!(annex.contains("Arvin, owned by another chat, is the last rung"));
+    assert!(!carries_word(annex, "prod") && !carries_word(annex, "deadman"));
+    for (file, amended) in [
+        ("src/lib.rs", "westering's own"),
+        ("src/records.rs", "westering's own"),
+    ] {
+        let text = std::fs::read_to_string(root().join(file)).unwrap();
+        assert!(text.contains(amended), "{file} must stand amended");
+        assert!(
+            !carries_word(&text, "prod") && !carries_word(&text, "deadman"),
+            "{file} carries an old sibling name in standing text"
+        );
+    }
+    let readme = std::fs::read_to_string(root().join("README.md")).unwrap();
+    assert!(readme.contains("Westering rescues automatically on its graded ladder"));
+    assert!(readme.contains("the kill switch arvin holds"));
+    assert!(!carries_word(&readme, "prod") && !carries_word(&readme, "deadman"));
+}
+
+#[test]
+fn the_description_stands_on_every_surface() {
+    let readme = std::fs::read_to_string(root().join("README.md")).unwrap();
+    assert!(
+        readme.starts_with(&format!("# cavalry\n\n{DESCRIPTION}\n")),
+        "the README lede must be the one description text"
+    );
+    let cargo = std::fs::read_to_string(root().join("Cargo.toml")).unwrap();
+    assert!(
+        cargo.contains(&format!("description = \"{DESCRIPTION}\"")),
+        "the package description must be the one description text"
+    );
+    let lib = std::fs::read_to_string(root().join("src/lib.rs")).unwrap();
+    assert!(
+        lib.starts_with(&format!("//! {DESCRIPTION}\n")),
+        "the crate doc line must be the one description text"
+    );
+    let main = std::fs::read_to_string(root().join("src/main.rs")).unwrap();
+    assert!(
+        main.contains(&format!("about = \"{DESCRIPTION}\"")),
+        "the clap about must be the one description text"
     );
 }
 

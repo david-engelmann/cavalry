@@ -56,7 +56,7 @@ Verify claims from the thing itself. A result is read from the file on disk, the
 
 This repo is cavalry. Its contract lives in CONTRACT.md and that file is the spec for every slice.
 
-Boundary. Cavalry records the rescues only a human could make. Prod, also owned by this chat, rescues automatically, and cavalry never performs a rescue or reimplements prod's ladder. Deadman, owned by another chat, is the last rung both point at, and cavalry never reimplements that switch.
+Boundary. Cavalry records the rescues only a human could make. Westering, also owned by this chat, rescues automatically, and cavalry never performs a rescue or reimplements westering's ladder. Arvin, owned by another chat, is the last rung both point at, and cavalry never reimplements that switch.
 
 First slice. The rescue record format plus a manual capture flow, the first rescue classes classified, and one drafted hook or rule per class, each drafted as a proposal and never as a silent edit to another repo.
 
