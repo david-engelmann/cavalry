@@ -162,3 +162,13 @@ CV-55. Behavior invariance, scoped. The amendments touch prose and doc comments 
 
 CV-56. Status discipline. The slice keeps the README status at Closed rounds 6 of 100 and the setup pin at its current count, and the round count moves only in the closure change after review. The two new load bearing rules, the amended boundary statements of CV-53 and the description of CV-54, carry discriminating content pins in the setup suite in this same slice. One pin asserts the amended statements on their surfaces with the old names absent from standing text, and one pin asserts the description on its surfaces.
 
+## Round 8 obligations
+
+Round 8 carries one work item and no functional change. The queue rendering and the proposals rendering in the records module each open by building the same settled set, the ids a confirmation settles, and the duplication has stood since the queue round as a recorded note awaiting a touch of either surface. This round factors that scan into one helper both renderings call and proves the factoring changes no behavior. Nothing else moves.
+
+CV-57. The settled set the queue rendering and the proposals rendering read is computed once, in one place. A single helper in the records module collects the ids that records in the confirmed state name through their corrects field, and the queue rendering and the proposals rendering each take the settled set from that helper and from nowhere else. No second copy of that scan stands anywhere in the crate.
+
+CV-58. The factoring of CV-57 changes no behavior. Every stored record line and every document and every refusal the tool produces stands byte identical to what the Round 7 binary produces. The proof is the full suite at the head of this round and a differential between the binary built before the factoring and the binary built after it, over the committed corpus of 102 cases and over the help and error surfaces, showing no difference in exit code and no difference in either stream for any case. The differential is run and its result recorded in the round record before the factoring is read as proven, and this obligation asserts the requirement and not the result ahead of that run.
+
+CV-59. Status discipline. The slice keeps the README status at Closed rounds 7 of 100 and the setup pin at its current count, and the round count moves only in the closure change after review.
+
