@@ -936,6 +936,25 @@ pub fn render_list(records: &[Value]) -> String {
     out
 }
 
+/// Collect the settled set, the ids that records in the
+/// confirmed state name through their corrects field.
+///
+/// The queue rendering and the proposals rendering both read
+/// the book under this one supersession, and CV-57 holds the
+/// scan to this single place so the two renderings can never
+/// read the settled set apart.
+fn settled_ids(records: &[Value]) -> Vec<&str> {
+    let mut settled: Vec<&str> = Vec::new();
+    for record in records {
+        if record.get("review_state").and_then(Value::as_str) == Some("confirmed")
+            && let Some(corrects) = record.get("corrects").and_then(Value::as_str)
+        {
+            settled.push(corrects);
+        }
+    }
+    settled
+}
+
 /// Render the queue, one line for each record whose current
 /// state still waits for a human decision.
 ///
@@ -954,14 +973,7 @@ pub fn render_list(records: &[Value]) -> String {
 /// never brings a record into the queue, and a book in which
 /// no record waits renders as the empty text.
 pub fn render_queue(records: &[Value]) -> String {
-    let mut settled: Vec<&str> = Vec::new();
-    for record in records {
-        if record.get("review_state").and_then(Value::as_str) == Some("confirmed")
-            && let Some(corrects) = record.get("corrects").and_then(Value::as_str)
-        {
-            settled.push(corrects);
-        }
-    }
+    let settled = settled_ids(records);
     let mut out = String::new();
     for record in records {
         let field = |name: &str| record.get(name).and_then(Value::as_str).unwrap_or("");
@@ -1001,14 +1013,7 @@ pub fn render_queue(records: &[Value]) -> String {
 /// in class list order with the unclassified block last, and a
 /// book counting nothing renders as the empty text.
 pub fn render_proposals(records: &[Value], class_list: &ClassList) -> Result<String, RecordError> {
-    let mut confirmed: Vec<&str> = Vec::new();
-    for record in records {
-        if record.get("review_state").and_then(Value::as_str) == Some("confirmed")
-            && let Some(corrects) = record.get("corrects").and_then(Value::as_str)
-        {
-            confirmed.push(corrects);
-        }
-    }
+    let confirmed = settled_ids(records);
     let mut present: Vec<String> = Vec::new();
     for record in records {
         let counted = if record.get("review_state").and_then(Value::as_str) == Some("confirmed") {
