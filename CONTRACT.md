@@ -172,3 +172,13 @@ CV-58. The factoring of CV-57 changes no behavior. Every stored record line and 
 
 CV-59. Status discipline. The slice keeps the README status at Closed rounds 7 of 100 and the setup pin at its current count, and the round count moves only in the closure change after review.
 
+## Round 9 obligations
+
+Round 9 carries one work item and no functional change. The preprocess walk reads help tokens on the root against a hand set holding the help long alone, and the set has stood unguarded since the port, a recorded note awaiting a touch of this surface. This round states the invariant the set rests on and guards it with a derived set pin, on the form the sibling repos landed for the same table. Nothing else moves.
+
+CV-60. The root command declares no long but --help, and the preprocess walk reads help tokens on the root against a hand set that holds --help alone for that reason and for no other. The hand set stands guarded by a pin in the unit tests of the binary entry that derives the root long set from the built command in the same manner subcommand_specs derives the long set of a subcommand, collecting the long of every argument the root command carries and completing the set with the help long where it stands absent, and asserts the derived set is exactly the one help long. A long added to the root command, declared as an argument or raised by an attribute, breaks the pin, so no added long can leave the hand set standing behind the parser in silence. The guard runs one way by construction, because the derivation completes the set with the help long where it stands absent, and the help long's own presence on the root stands pinned by the corpus help cases rather than by this pin.
+
+CV-61. Behavior invariance, scoped. The round adds contract text and the guard pin of CV-60 and changes no behavior, and the hand set of the walk itself is untouched, the round guarding the table it already holds rather than replacing it. The proof is the full suite at the head and the full corpus re-run against the final binary, with no difference in any expectation. Any difference is a defect and stops the round.
+
+CV-62. Status discipline. The slice keeps the README status at Closed rounds 8 of 100 and the setup pin at its current count, and the round count moves only in the closure change after review.
+
