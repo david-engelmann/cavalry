@@ -26,9 +26,9 @@ use std::path::{Path, PathBuf};
 use cavalry::pyjson::{self, Value};
 use common::{run_cli, temp_dir};
 
-const EXPECTED_CASES: usize = 102;
+const EXPECTED_CASES: usize = 107;
 const EXPECTED_ORACLE_CASES: usize = 71;
-const EXPECTED_CLAP_CASES: usize = 31;
+const EXPECTED_CLAP_CASES: usize = 36;
 
 fn string(value: &Value) -> &str {
     value.as_str().expect("corpus text is a string")
