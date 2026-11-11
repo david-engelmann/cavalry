@@ -1477,6 +1477,50 @@ mod tests {
         );
     }
 
+    /// CV-80. A refused help token at the root blocks
+    /// the walk, and a help token in its tail does not
+    /// fire, the blocking standing observable in the
+    /// tail rather than in the one token stream the
+    /// collected reading would also produce.
+    #[test]
+    fn refusal_at_root_blocks_the_tail() {
+        assert_eq!(
+            run_stream(&["--help=x", "--help"]),
+            expect(&["--help=x", "--help"])
+        );
+    }
+
+    /// CV-80. A separator at the root gathers a help
+    /// token behind it as a value, where the selection
+    /// reading of the same stream would fire it.
+    #[test]
+    fn separator_at_root_gathers_help_as_value() {
+        assert_eq!(run_stream(&["--", "--help"]), expect(&["--", "--help"]));
+    }
+
+    /// CV-80. A collected short behind queue stands
+    /// ahead of the separator when a value follows it,
+    /// where the blocked reading would hand the raw
+    /// stream over with no separator.
+    #[test]
+    fn queue_unknown_short_then_positional() {
+        assert_eq!(
+            run_stream(&["queue", "-x", "book.json"]),
+            expect(&["queue", "-x", "--", "book.json"])
+        );
+    }
+
+    /// CV-80. The fixtures long collected behind queue
+    /// consumes nothing, and a value after it is
+    /// gathered behind the separator.
+    #[test]
+    fn queue_fixtures_long_then_positional() {
+        assert_eq!(
+            run_stream(&["queue", "--fixtures", "book.json"]),
+            expect(&["queue", "--fixtures", "--", "book.json"])
+        );
+    }
+
     /// CV-80. A help prefix matching the help long and
     /// another long at once is no reading, the match
     /// standing on more than one long.
