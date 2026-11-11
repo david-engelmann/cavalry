@@ -1476,4 +1476,98 @@ mod tests {
             Some("capture".to_string())
         );
     }
+
+    /// CV-80. A help prefix matching the help long and
+    /// another long at once is no reading, the match
+    /// standing on more than one long.
+    #[test]
+    fn ambiguous_help_prefix_is_no_reading() {
+        let longs = vec!["--help".to_string(), "--help-all".to_string()];
+        assert_eq!(read_of("--hel", &longs), (false, None));
+    }
+
+    /// CV-80. A collected token standing between two
+    /// fixtures flags is not the token the later flag's
+    /// replacement removes, and the stream keeps it ahead
+    /// of the replacing flag.
+    #[test]
+    fn collected_token_between_flags_survives_removal() {
+        assert_eq!(
+            run_stream(&["capture", "--fixtures=a", "--bogus", "--fixtures=b"]),
+            expect(&["capture", "--bogus", "--fixtures=b"])
+        );
+    }
+
+    /// CV-80. A degenerate flag name, the two dashes
+    /// alone before the equals sign, matches the one
+    /// value flag and consumes its attached value.
+    #[test]
+    fn degenerate_flag_name_consumes_attached_value() {
+        assert_eq!(
+            run_stream(&["capture", "--=x"]),
+            expect(&["capture", "--=x"])
+        );
+    }
+
+    /// CV-80. The degenerate flag name with an empty
+    /// value takes the attached empty arm and clears a
+    /// standing token.
+    #[test]
+    fn degenerate_flag_name_empty_clears_standing() {
+        assert_eq!(
+            run_stream(&["capture", "--fixtures=a", "--="]),
+            expect(&["capture"])
+        );
+    }
+
+    /// CV-80. A bare fixtures flag after a joined one
+    /// replaces it, the last of the six replacement
+    /// orders.
+    #[test]
+    fn fixtures_bare_after_joined_overrides() {
+        assert_eq!(
+            run_stream(&["capture", "--fixtures", "a", "--fixtures", "b"]),
+            expect(&["capture", "--fixtures=b"])
+        );
+    }
+
+    /// CV-80. An empty attached fixtures value after a
+    /// joined one clears it, the last replacement order.
+    #[test]
+    fn fixtures_attached_empty_after_joined_clears() {
+        assert_eq!(
+            run_stream(&["capture", "--fixtures", "a", "--fixtures="]),
+            expect(&["capture"])
+        );
+    }
+
+    /// CV-80. A negative fraction behind queue matches
+    /// the negative number grammar's fraction arm and is
+    /// gathered as a value.
+    #[test]
+    fn queue_negative_fraction_gathered() {
+        assert_eq!(
+            run_stream(&["queue", "-1.5"]),
+            expect(&["queue", "--", "-1.5"])
+        );
+    }
+
+    /// CV-80. A negative number with an empty fraction
+    /// behind queue fails the grammar and is collected
+    /// as an option.
+    #[test]
+    fn queue_negative_trailing_dot_collected() {
+        assert_eq!(run_stream(&["queue", "-1."]), expect(&["queue", "-1."]));
+    }
+
+    /// CV-80. A negative number carrying a trailing
+    /// newline behind queue matches the grammar's
+    /// newline arm and is gathered as a value.
+    #[test]
+    fn queue_negative_newline_gathered() {
+        assert_eq!(
+            run_stream(&["queue", "-1\n"]),
+            expect(&["queue", "--", "-1\n"])
+        );
+    }
 }
