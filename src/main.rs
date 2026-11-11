@@ -894,10 +894,7 @@ mod tests {
     /// long that is not the help long.
     #[test]
     fn fixtures_long_is_no_reading() {
-        assert_eq!(
-            read_of("--fixtures", &spec_longs("capture")),
-            (false, None)
-        );
+        assert_eq!(read_of("--fixtures", &spec_longs("capture")), (false, None));
     }
 
     /// CV-80. Behind capture, a prefix of the fixtures
@@ -1105,10 +1102,7 @@ mod tests {
     /// among them.
     #[test]
     fn separator_first_gathers_all() {
-        assert_eq!(
-            run_stream(&["--", "capture"]),
-            expect(&["--", "capture"])
-        );
+        assert_eq!(run_stream(&["--", "capture"]), expect(&["--", "capture"]));
     }
 
     /// CV-80. Behind the separator a help token is a
@@ -1327,10 +1321,7 @@ mod tests {
     /// positional string and is gathered.
     #[test]
     fn queue_negative_reads_as_positional() {
-        assert_eq!(
-            run_stream(&["queue", "-1"]),
-            expect(&["queue", "--", "-1"])
-        );
+        assert_eq!(run_stream(&["queue", "-1"]), expect(&["queue", "--", "-1"]));
     }
 
     /// CV-80. A long token carrying a space behind queue
@@ -1435,10 +1426,7 @@ mod tests {
     /// as a positional string and is gathered.
     #[test]
     fn empty_token_behind_subcommand_is_a_value() {
-        assert_eq!(
-            run_stream(&["queue", ""]),
-            expect(&["queue", "--", ""])
-        );
+        assert_eq!(run_stream(&["queue", ""]), expect(&["queue", "--", ""]));
     }
 
     /// CV-80. An empty token at the root reads as a
@@ -1489,4 +1477,3 @@ mod tests {
         );
     }
 }
-
