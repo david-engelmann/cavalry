@@ -115,7 +115,7 @@ fn readme_status_reports_rounds() {
     // The pin is cavalry's own form, the one its Round 1
     // closure restored. The count phrase stands somewhere in
     // the README and is not the head of a longer number.
-    let needle = "Closed rounds 17 of 100";
+    let needle = "Closed rounds 18 of 100";
     let mut found = false;
     let mut search = text.as_str();
     while let Some(at) = search.find(needle) {
