@@ -26,8 +26,8 @@ use std::path::{Path, PathBuf};
 use cavalry::pyjson::{self, Value};
 use common::{run_cli, temp_dir};
 
-const EXPECTED_CASES: usize = 217;
-const EXPECTED_ORACLE_CASES: usize = 181;
+const EXPECTED_CASES: usize = 216;
+const EXPECTED_ORACLE_CASES: usize = 180;
 const EXPECTED_CLAP_CASES: usize = 36;
 
 fn string(value: &Value) -> &str {

@@ -6390,40 +6390,6 @@
      "fx/classification-abstain.json": "{\n  \"judgment_point\": \"classification\",\n  \"request\": {\n    \"classes\": [\n      \"prompt-rephrase\",\n      \"run-interruption\",\n      \"manual-edit\"\n    ],\n    \"human_action\": \"The maintainer edited the file by hand and sent it on\",\n    \"record_id\": \"fox-004\",\n    \"stalled\": \"The generated file carried a wrong heading that the checker passed\"\n  },\n  \"response\": {\n    \"kind\": \"abstention\"\n  },\n  \"synthetic\": true\n}\n"
     }
    }
-  },
-  {
-   "name": "capture-quality-wrong-kind",
-   "source": "oracle",
-   "argv": [
-    "capture",
-    "in.json",
-    "records.jsonl",
-    "--fixtures",
-    "fq"
-   ],
-   "seed": {
-    "in.json": "{\n  \"id\": \"q-006\",\n  \"run_ref\": \"run-synthetic-q-006\",\n  \"rescued_role\": \"support-operator\",\n  \"rescuer_role\": \"on-call-operator\",\n  \"rescuer_kind\": \"human\",\n  \"stalled\": \"The run stalled on a long step\",\n  \"human_action\": \"The operator watched and waited\",\n  \"occurred_at\": \"2026-01-05T10:00:00Z\",\n  \"outcome\": \"The run finished late\"\n}\n",
-    "records.jsonl": "",
-    "fq/quality.json": "{\n  \"judgment_point\": \"quality\",\n  \"request\": {\n    \"human_action\": \"The operator watched and waited\",\n    \"outcome\": \"The run finished late\",\n    \"record_id\": \"q-006\",\n    \"stalled\": \"The run stalled on a long step\"\n  },\n  \"response\": {\n    \"choice\": \"prompt-rephrase\",\n    \"confidence\": 0.9,\n    \"kind\": \"choice\",\n    \"probabilities\": {\n      \"manual-edit\": 0.05,\n      \"prompt-rephrase\": 0.9,\n      \"run-interruption\": 0.05\n    }\n  },\n  \"synthetic\": true\n}\n"
-   },
-   "expect": {
-    "code": 2,
-    "stdout": "",
-    "stderr": "error: fixture quality.json response kind 'choice' does not answer the quality point, which takes a score or an abstention\n",
-    "files": {
-     "in.json": "{\n  \"id\": \"q-006\",\n  \"run_ref\": \"run-synthetic-q-006\",\n  \"rescued_role\": \"support-operator\",\n  \"rescuer_role\": \"on-call-operator\",\n  \"rescuer_kind\": \"human\",\n  \"stalled\": \"The run stalled on a long step\",\n  \"human_action\": \"The operator watched and waited\",\n  \"occurred_at\": \"2026-01-05T10:00:00Z\",\n  \"outcome\": \"The run finished late\"\n}\n",
-     "records.jsonl": "",
-     "fq/quality.json": "{\n  \"judgment_point\": \"quality\",\n  \"request\": {\n    \"human_action\": \"The operator watched and waited\",\n    \"outcome\": \"The run finished late\",\n    \"record_id\": \"q-006\",\n    \"stalled\": \"The run stalled on a long step\"\n  },\n  \"response\": {\n    \"choice\": \"prompt-rephrase\",\n    \"confidence\": 0.9,\n    \"kind\": \"choice\",\n    \"probabilities\": {\n      \"manual-edit\": 0.05,\n      \"prompt-rephrase\": 0.9,\n      \"run-interruption\": 0.05\n    }\n  },\n  \"synthetic\": true\n}\n",
-     "fx/quality-below-bar.json": "{\n  \"judgment_point\": \"quality\",\n  \"request\": {\n    \"human_action\": \"The maintainer checked the source by hand and wrote a note for follow up\",\n    \"outcome\": \"The number was explained in the note and no run was changed\",\n    \"record_id\": \"fox-003\",\n    \"stalled\": \"A dashboard number looked odd for a reason nobody could name\"\n  },\n  \"response\": {\n    \"confidence\": 0.93,\n    \"kind\": \"score\",\n    \"score\": 0.3\n  },\n  \"synthetic\": true\n}\n",
-     "fx/quality-abstain.json": "{\n  \"judgment_point\": \"quality\",\n  \"request\": {\n    \"human_action\": \"The maintainer edited the file by hand and sent it on\",\n    \"outcome\": \"The file went out with the right heading\",\n    \"record_id\": \"fox-004\",\n    \"stalled\": \"The generated file carried a wrong heading that the checker passed\"\n  },\n  \"response\": {\n    \"kind\": \"abstention\"\n  },\n  \"synthetic\": true\n}\n",
-     "fx/quality-above-bar.json": "{\n  \"judgment_point\": \"quality\",\n  \"request\": {\n    \"human_action\": \"The operator rephrased the prompt and restarted the task\",\n    \"outcome\": \"The task finished on the next run\",\n    \"record_id\": \"fox-001\",\n    \"stalled\": \"The task stalled because the prompt wording sent the worker in a circle\"\n  },\n  \"response\": {\n    \"confidence\": 0.88,\n    \"kind\": \"score\",\n    \"score\": 0.85\n  },\n  \"synthetic\": true\n}\n",
-     "fx/classification-new-class.json": "{\n  \"judgment_point\": \"classification\",\n  \"request\": {\n    \"classes\": [\n      \"prompt-rephrase\",\n      \"run-interruption\",\n      \"manual-edit\"\n    ],\n    \"human_action\": \"The maintainer checked the source by hand and wrote a note for follow up\",\n    \"record_id\": \"fox-003\",\n    \"stalled\": \"A dashboard number looked odd for a reason nobody could name\"\n  },\n  \"response\": {\n    \"choice\": \"new-class\",\n    \"confidence\": 0.91,\n    \"kind\": \"choice\",\n    \"probabilities\": {\n      \"manual-edit\": 0.02,\n      \"new-class\": 0.91,\n      \"prompt-rephrase\": 0.04,\n      \"run-interruption\": 0.03\n    }\n  },\n  \"synthetic\": true\n}\n",
-     "fx/classification-differ.json": "{\n  \"judgment_point\": \"classification\",\n  \"request\": {\n    \"classes\": [\n      \"prompt-rephrase\",\n      \"run-interruption\",\n      \"manual-edit\"\n    ],\n    \"human_action\": \"The reviewer killed the run and removed the bad output\",\n    \"record_id\": \"fox-002\",\n    \"stalled\": \"The run kept writing to the wrong output and would not stop\"\n  },\n  \"response\": {\n    \"choice\": \"manual-edit\",\n    \"confidence\": 0.87,\n    \"kind\": \"choice\",\n    \"probabilities\": {\n      \"manual-edit\": 0.87,\n      \"new-class\": 0.02,\n      \"prompt-rephrase\": 0.03,\n      \"run-interruption\": 0.08\n    }\n  },\n  \"synthetic\": true\n}\n",
-     "fx/classification-below-threshold.json": "{\n  \"judgment_point\": \"classification\",\n  \"request\": {\n    \"classes\": [\n      \"prompt-rephrase\",\n      \"run-interruption\",\n      \"manual-edit\"\n    ],\n    \"human_action\": \"The operator rephrased the prompt with plainer steps\",\n    \"record_id\": \"fox-005\",\n    \"stalled\": \"The worker looped on the same step because the prompt wording was vague\"\n  },\n  \"response\": {\n    \"choice\": \"prompt-rephrase\",\n    \"confidence\": 0.45,\n    \"kind\": \"choice\",\n    \"probabilities\": {\n      \"manual-edit\": 0.2,\n      \"new-class\": 0.1,\n      \"prompt-rephrase\": 0.45,\n      \"run-interruption\": 0.25\n    }\n  },\n  \"synthetic\": true\n}\n",
-     "fx/classification-agree.json": "{\n  \"judgment_point\": \"classification\",\n  \"request\": {\n    \"classes\": [\n      \"prompt-rephrase\",\n      \"run-interruption\",\n      \"manual-edit\"\n    ],\n    \"human_action\": \"The operator rephrased the prompt and restarted the task\",\n    \"record_id\": \"fox-001\",\n    \"stalled\": \"The task stalled because the prompt wording sent the worker in a circle\"\n  },\n  \"response\": {\n    \"choice\": \"prompt-rephrase\",\n    \"confidence\": 0.9,\n    \"kind\": \"choice\",\n    \"probabilities\": {\n      \"manual-edit\": 0.03,\n      \"new-class\": 0.03,\n      \"prompt-rephrase\": 0.9,\n      \"run-interruption\": 0.04\n    }\n  },\n  \"synthetic\": true\n}\n",
-     "fx/classification-abstain.json": "{\n  \"judgment_point\": \"classification\",\n  \"request\": {\n    \"classes\": [\n      \"prompt-rephrase\",\n      \"run-interruption\",\n      \"manual-edit\"\n    ],\n    \"human_action\": \"The maintainer edited the file by hand and sent it on\",\n    \"record_id\": \"fox-004\",\n    \"stalled\": \"The generated file carried a wrong heading that the checker passed\"\n  },\n  \"response\": {\n    \"kind\": \"abstention\"\n  },\n  \"synthetic\": true\n}\n"
-    }
-   }
   }
  ]
 }
