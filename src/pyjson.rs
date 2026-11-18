@@ -2218,3 +2218,40 @@ pub fn py_splitlines(text: &str) -> Vec<String> {
     }
     lines
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// CV-162. A document carrying one key twice parses to
+    /// one entry for that key, standing at the place of the
+    /// key's first occurrence and carrying the value of its
+    /// last. The place half of that rule is not separately
+    /// observable at the command surface, because every text
+    /// the tool prints from a document sorts the keys of the
+    /// document, so the pin for the place half stands at the
+    /// reader itself. A reader that moves a repeated key's
+    /// entry to the place of its last occurrence still
+    /// carries the last value and fails this test on the
+    /// order alone.
+    #[test]
+    fn repeated_key_stands_at_its_first_place_and_carries_its_last_value() {
+        let parsed = parse("{\"a\":1,\"b\":2,\"a\":3}").expect("the document parses");
+        let Value::Object(entries) = &parsed else {
+            panic!("the document parses to an object");
+        };
+        assert_eq!(entries.len(), 2, "one entry stands for the repeated key");
+        let keys: Vec<&str> = entries.iter().map(|(key, _)| key.as_str()).collect();
+        assert_eq!(keys, vec!["a", "b"], "the entry keeps the first place");
+        assert_eq!(
+            entries[0].1,
+            Value::int(3),
+            "the entry carries the last value"
+        );
+        assert_eq!(
+            entries[1].1,
+            Value::int(2),
+            "the other entry stands untouched"
+        );
+    }
+}
